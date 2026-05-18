@@ -25,7 +25,7 @@ internal static class ChoiceRenderer
         }
 
         AnsiConsole.WriteLine();
-        AnsiConsole.MarkupLine("[dim]Enter a number, [bold]s[/] to save, or [bold]q[/] to quit.[/]");
+        AnsiConsole.MarkupLine("[dim]Enter a number, [bold]s[/] to save, [bold]d[/] to inspect, or [bold]q[/] to quit.[/]");
         AnsiConsole.WriteLine();
     }
 }

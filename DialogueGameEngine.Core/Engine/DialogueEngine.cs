@@ -55,6 +55,22 @@ public sealed class DialogueEngine
     }
 
     /// <summary>
+    /// Creates the evaluation context for the state's current scene.
+    /// </summary>
+    /// <param name="state">The current game state.</param>
+    /// <returns>
+    /// An <see cref="EvaluationContext"/> populated with the current scene and its active modifiers.
+    /// </returns>
+    /// <exception cref="InvalidOperationException">
+    /// Thrown if <see cref="GameState.CurrentScene"/> does not match any loaded scene definition.
+    /// </exception>
+    public EvaluationContext CreateContext(GameState state)
+    {
+        var scene = GetCurrentScene(state);
+        return CreateContext(state, scene);
+    }
+
+    /// <summary>
     /// Returns all choices in the current scene whose conditions are currently satisfied.
     /// </summary>
     /// <param name="state">The current game state.</param>
@@ -64,8 +80,8 @@ public sealed class DialogueEngine
     /// </returns>
     public IReadOnlyList<ChoiceDefinition> GetAvailableChoices(GameState state)
     {
-        var scene = GetCurrentScene(state);
-        var context = CreateContext(state, scene);
+        var context = CreateContext(state);
+        var scene = context.Scene;
 
         return scene.Choices
             .Where(c => c.IsAvailable(context))
@@ -83,8 +99,8 @@ public sealed class DialogueEngine
     /// </exception>
     public void SelectChoice(GameState state, ChoiceId choiceId)
     {
-        var scene = GetCurrentScene(state);
-        var context = CreateContext(state, scene);
+        var context = CreateContext(state);
+        var scene = context.Scene;
 
         var choice = scene.Choices.SingleOrDefault(c => c.Id == choiceId)
             ?? throw new InvalidOperationException($"Choice not found: {choiceId.Value}");

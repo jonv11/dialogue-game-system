@@ -49,9 +49,9 @@ internal static class AttributeAddressPrompt
 
     internal static string Format(AttributeAddress addr) => addr.Scope switch
     {
-        AttributeScope.Character => $"{addr.Character!.Value}.{addr.Attribute.Value}",
-        AttributeScope.Relation  => $"{addr.From!.Value}→{addr.To!.Value}.{addr.Attribute.Value}",
-        AttributeScope.Scene     => $"[{addr.Scene!.Value}].{addr.Attribute.Value}",
+        AttributeScope.Character => $"{addr.Character!.Value.Value}.{addr.Attribute.Value}",
+        AttributeScope.Relation  => $"{addr.From!.Value.Value}→{addr.To!.Value.Value}.{addr.Attribute.Value}",
+        AttributeScope.Scene     => $"[{addr.Scene!.Value.Value}].{addr.Attribute.Value}",
         AttributeScope.World     => $"World.{addr.Attribute.Value}",
         _                        => addr.Attribute.Value
     };

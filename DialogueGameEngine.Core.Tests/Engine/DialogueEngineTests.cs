@@ -167,6 +167,37 @@ public class DialogueEngineTests
     }
 
     [Fact]
+    public void CreateContext_IncludesOnlyCurrentSceneModifiers()
+    {
+        var currentSceneModifier = new ModifierDefinition
+        {
+            Id = new ModifierId("active_boost"),
+            Target = PlayerTrust,
+            Delta = 10,
+            Duration = ModifierDuration.CurrentScene
+        };
+        var instantModifier = new ModifierDefinition
+        {
+            Id = new ModifierId("instant_boost"),
+            Target = PlayerTrust,
+            Delta = 20,
+            Duration = ModifierDuration.Instant
+        };
+        var scene = TestFixture.NewScene(
+            TestFixture.SceneA,
+            modifiers: [currentSceneModifier, instantModifier]);
+        var engine = new DialogueEngine([scene]);
+        var state = TestFixture.NewState(TestFixture.SceneA);
+
+        var context = engine.CreateContext(state);
+
+        context.Scene.Should().Be(scene);
+        context.ActiveModifiers.Should().ContainSingle()
+            .Which.Id.Should().Be(new ModifierId("active_boost"));
+        ((int)context.GetEffectiveValue(PlayerTrust)).Should().Be(10);
+    }
+
+    [Fact]
     public void GetAvailableChoices_NullCondition_ChoiceIsIncluded()
     {
         var choice = TestFixture.NewChoice("unconditional", condition: null);

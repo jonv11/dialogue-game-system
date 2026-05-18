@@ -35,6 +35,7 @@ dotnet run --project DialogueGameEngine.Cli -- --story <dir> [--save <file>] [--
 |-----|--------|
 | `1`–`9` | Select a choice |
 | `s` | Save progress manually |
+| `d` | Print a debug inspect snapshot |
 | `q` | Save and quit |
 
 Progress is **auto-saved** after every choice. To restart, delete `save.json`.
@@ -95,6 +96,16 @@ dotnet run --project DialogueGameEngine.Cli -- stats --story <dir> [--start <sce
 ```
 
 The optional `--start` overrides which scene is used as the root for reachability and path analysis. If omitted, the starting scene is read from `_initial-state.json` (or the first scene alphabetically if that file is absent).
+
+### Inspecting Runtime State
+
+Print a full debug snapshot of the current save file: current scene, flags, attributes, active scene modifiers, and each current-scene choice with its condition, effects, availability, and destination.
+
+```sh
+dotnet run --project DialogueGameEngine.Cli -- inspect --story <dir> [--save <file>] [--start <scene-id>]
+```
+
+If a save file exists, `inspect` reads it. Otherwise it uses `--start`, `_initial-state.json`, or the first scene alphabetically in the same order as play mode. During play, press `d` to print the same snapshot without leaving the story.
 
 ### Scene File at a Glance
 
@@ -193,4 +204,4 @@ To play it:
 dotnet run --project DialogueGameEngine.Cli -- --story docs/examples/tutorial-story
 ```
 
-The [sample-story/](DialogueGameEngine.Cli/sample-story/) in the CLI project is a more complete 7-scene branching narrative demonstrating the full range of system features.
+The [sample-story/](DialogueGameEngine.Cli/sample-story/) in the CLI project is a more complete 6-scene branching narrative demonstrating the full range of system features.

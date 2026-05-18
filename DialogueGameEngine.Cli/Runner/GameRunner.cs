@@ -12,11 +12,13 @@ internal sealed class GameRunner
 {
     private readonly DialogueEngine _engine;
     private readonly IGameStateRepository _saveRepo;
+    private readonly IReadOnlyList<SceneDefinition> _allScenes;
 
-    internal GameRunner(DialogueEngine engine, IGameStateRepository saveRepo)
+    internal GameRunner(DialogueEngine engine, IGameStateRepository saveRepo, IEnumerable<SceneDefinition> allScenes)
     {
         _engine = engine;
         _saveRepo = saveRepo;
+        _allScenes = allScenes.ToList();
     }
 
     internal void Run(GameState state)
@@ -53,6 +55,12 @@ internal sealed class GameRunner
             {
                 _saveRepo.Save(state);
                 AnsiConsole.MarkupLine("[dim]Saved.[/]");
+                continue;
+            }
+
+            if (input == "d")
+            {
+                InspectRunner.Run(_engine, state, _allScenes);
                 continue;
             }
 
