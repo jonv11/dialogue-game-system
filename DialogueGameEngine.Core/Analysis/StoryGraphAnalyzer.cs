@@ -4,9 +4,8 @@ namespace DialogueGameEngine.Core.Analysis;
 /// Analyzes the directed graph of scenes and choices in a story.
 /// </summary>
 /// <remarks>
-/// Graph edges are derived only from <see cref="ChoiceDefinition.NextScene"/> values.
-/// Dynamic edges via <c>MoveToSceneEffect</c> inside choice effects are not statically
-/// analyzable and are excluded.
+/// Graph edges are derived from <see cref="ChoiceDefinition.NextScene"/> values and
+/// statically known <see cref="MoveToSceneEffect"/> targets, including nested conditional effects.
 /// </remarks>
 public sealed class StoryGraphAnalyzer
 {
@@ -41,16 +40,15 @@ public sealed class StoryGraphAnalyzer
         foreach (var scene in _scenes.Values)
         {
             totalChoices += scene.Choices.Count;
-            foreach (var choice in scene.Choices)
+            foreach (var edge in StoryGraphEdgeCollector.Collect(scene))
             {
-                if (choice.NextScene is not { } nextScene) continue;
-                if (!_scenes.ContainsKey(nextScene))
+                if (!_scenes.ContainsKey(edge.To))
                 {
-                    brokenRefs.Add(nextScene.Value);
+                    brokenRefs.Add(edge.To.Value);
                     continue;
                 }
-                outEdges[scene.Id].Add(nextScene);
-                inDegree[nextScene] = inDegree.GetValueOrDefault(nextScene) + 1;
+                outEdges[scene.Id].Add(edge.To);
+                inDegree[edge.To] = inDegree.GetValueOrDefault(edge.To) + 1;
             }
         }
 

@@ -30,13 +30,17 @@ internal static class TestFixture
     internal static SceneDefinition NewScene(
         SceneId? id = null,
         IReadOnlyList<ChoiceDefinition>? choices = null,
-        IReadOnlyList<ModifierDefinition>? modifiers = null) =>
+        IReadOnlyList<ModifierDefinition>? modifiers = null,
+        IReadOnlyList<IEffect>? onEnterEffects = null,
+        IReadOnlyList<IEffect>? onExitEffects = null) =>
         new()
         {
             Id = id ?? SceneA,
             Title = "Test Scene",
             Choices = choices ?? [],
-            Modifiers = modifiers ?? []
+            Modifiers = modifiers ?? [],
+            OnEnterEffects = onEnterEffects ?? [],
+            OnExitEffects = onExitEffects ?? []
         };
 
     internal static ChoiceDefinition NewChoice(

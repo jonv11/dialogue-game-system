@@ -15,6 +15,9 @@ dotnet run --project DialogueGameEngine.Cli -- --story DialogueGameEngine.Cli/sa
 
 # Play the tutorial story (great starting point)
 dotnet run --project DialogueGameEngine.Cli -- --story docs/examples/tutorial-story
+
+# Validate a story before playing it
+dotnet run --project DialogueGameEngine.Cli -- validate --story docs/examples/tutorial-story
 ```
 
 ## Playing a Story
@@ -39,6 +42,8 @@ dotnet run --project DialogueGameEngine.Cli -- --story <dir> [--save <file>] [--
 | `q` | Save and quit |
 
 Progress is **auto-saved** after every choice. To restart, delete `save.json`.
+
+When a new session starts, the engine runs the initial scene's `onEnterEffects` once before play begins. Saved games remember that this happened, so resuming a save does not replay initial enter effects.
 
 ## Building a Story
 
@@ -89,6 +94,22 @@ my-story/
 
 ### Analysing a Story
 
+Use `validate` when you need a pass/fail correctness check:
+
+```sh
+dotnet run --project DialogueGameEngine.Cli -- validate --story <dir>
+dotnet run --project DialogueGameEngine.Cli -- validate --story <dir> --warnings-as-errors
+dotnet run --project DialogueGameEngine.Cli -- validate --story <dir> --format json
+```
+
+Validation exits with code `0` when there are no errors. Warnings do not fail by default; `--warnings-as-errors` makes them fail. The command checks JSON loading, required fields, duplicate scene and choice IDs, graph references, initial state, attribute addresses, conditions, effects, and lifecycle hooks.
+
+Example validation error:
+
+```text
+ERROR STORY005 Scene 'intro', choice 'lie': unknown scene reference 'escape_route'.
+```
+
 Print graph statistics — scene count, choice count, reachable endings, unique paths, orphan scenes, and broken references:
 
 ```sh
@@ -96,6 +117,8 @@ dotnet run --project DialogueGameEngine.Cli -- stats --story <dir> [--start <sce
 ```
 
 The optional `--start` overrides which scene is used as the root for reachability and path analysis. If omitted, the starting scene is read from `_initial-state.json` (or the first scene alphabetically if that file is absent).
+
+`stats` is an analysis summary. `validate` is the correctness gate and returns failing exit codes for errors.
 
 ### Inspecting Runtime State
 
@@ -147,9 +170,52 @@ If a save file exists, `inspect` reads it. Otherwise it uses `--start`, `_initia
 
 The story ends when the current scene has no available choices.
 
+### Minimal Valid Story
+
+```text
+my-story/
+├── _initial-state.json
+└── start.json
+```
+
+`_initial-state.json`:
+
+```json
+{
+  "currentScene": "start",
+  "attributes": [],
+  "flags": []
+}
+```
+
+`start.json`:
+
+```json
+{
+  "id": "start",
+  "title": "A Beginning",
+  "description": "The story starts here.",
+  "choices": []
+}
+```
+
+Scene files are loaded strictly by default for `play`, `stats`, `inspect`, and `validate`. Invalid JSON, unknown condition/effect types, missing required fields, and duplicate scene IDs fail instead of being skipped.
+
+### Lifecycle Effects
+
+Scene lifecycle effects are executed by the Core engine, not by the CLI:
+
+1. `DialogueEngine.Start(state)` applies the initial scene's `onEnterEffects` once.
+2. Selecting an available choice applies the current scene's `onExitEffects`.
+3. The selected choice's `effects` run.
+4. The engine moves to the choice's `nextScene` when one is set.
+5. The target scene's `onEnterEffects` run.
+
+Reading or displaying the current scene does not rerun `onEnterEffects`. Returning to a scene later runs that scene's `onEnterEffects` again.
+
 ### Attribute System
 
-Attributes are integer values clamped to **–100 → +100**. They live on one of four scopes:
+Attributes are integer values clamped to **–100 → +100** at runtime. Validation warns about out-of-range values because they will be clamped. Attributes live on one of four scopes:
 
 | Scope | Example address | Meaning |
 |-------|----------------|---------|

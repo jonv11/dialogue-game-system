@@ -7,7 +7,8 @@ namespace DialogueGameEngine.Core;
 /// <para>
 /// Place <see cref="AttributeAssignment"/> entries in <see cref="SceneDefinition.Ambiance"/> to
 /// declare the emotional or atmospheric baseline of a scene. The CLI and tools can display
-/// these values, and conditions can read them via <see cref="AttributeAddress.SceneAttribute"/>.
+/// these values. They are not read by conditions unless an effect first writes the value into
+/// <see cref="GameState"/>.
 /// </para>
 /// <para>
 /// This is declarative data, not logic. To change an attribute value during play,

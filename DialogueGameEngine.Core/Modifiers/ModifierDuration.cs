@@ -6,7 +6,7 @@ namespace DialogueGameEngine.Core;
 public enum ModifierDuration
 {
     /// <summary>
-    /// The modifier is applied once at scene entry and does not persist as an active modifier.
+    /// Reserved for a future one-shot modifier layer.
     /// In most cases you should use a <see cref="SceneDefinition.OnEnterEffects"/> entry instead.
     /// </summary>
     Instant,

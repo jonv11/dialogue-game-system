@@ -220,6 +220,70 @@ public class StoryGraphAnalyzerTests
         result.BrokenNextSceneRefs.Should().ContainSingle().Which.Should().Be("ghost_scene");
     }
 
+    [Fact]
+    public void MoveToSceneEffect_AddsStaticGraphEdge()
+    {
+        var sceneA = TestFixture.NewScene(new SceneId("a"), choices:
+        [
+            TestFixture.NewChoice(
+                "jump",
+                effects: [new MoveToSceneEffect { Scene = new SceneId("b") }])
+        ]);
+        var result = Analyze([sceneA, EndScene("b")], "a");
+
+        result.ReachableEndings.Should().Be(1);
+        result.UniquePathCount.Should().Be(1);
+    }
+
+    [Fact]
+    public void ConditionalMoveToSceneEffect_AddsNestedStaticGraphEdge()
+    {
+        var sceneA = TestFixture.NewScene(new SceneId("a"), choices:
+        [
+            TestFixture.NewChoice(
+                "jump",
+                effects:
+                [
+                    new ConditionalEffect
+                    {
+                        Condition = new FlagCondition { Flag = new FlagId("Flag") },
+                        Then = [new MoveToSceneEffect { Scene = new SceneId("b") }],
+                        Else = []
+                    }
+                ])
+        ]);
+        var result = Analyze([sceneA, EndScene("b")], "a");
+
+        result.ReachableEndings.Should().Be(1);
+    }
+
+    [Fact]
+    public void LifecycleMoveToSceneEffect_AddsStaticGraphEdge()
+    {
+        var sceneA = TestFixture.NewScene(
+            new SceneId("a"),
+            choices: [],
+            onEnterEffects: [new MoveToSceneEffect { Scene = new SceneId("b") }]);
+        var result = Analyze([sceneA, EndScene("b")], "a");
+
+        result.EndingScenes.Should().Be(1);
+        result.ReachableEndings.Should().Be(1);
+    }
+
+    [Fact]
+    public void BrokenMoveToSceneEffectRef_ReportedInList()
+    {
+        var sceneA = TestFixture.NewScene(new SceneId("a"), choices:
+        [
+            TestFixture.NewChoice(
+                "bad",
+                effects: [new MoveToSceneEffect { Scene = new SceneId("ghost_scene") }])
+        ]);
+        var result = Analyze([sceneA], "a");
+
+        result.BrokenNextSceneRefs.Should().ContainSingle().Which.Should().Be("ghost_scene");
+    }
+
     // ── Choices-per-scene stats ────────────────────────────────────────────────
 
     [Fact]

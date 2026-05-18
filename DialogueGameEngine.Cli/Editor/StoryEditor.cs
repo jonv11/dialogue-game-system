@@ -112,7 +112,23 @@ internal sealed class StoryEditor
 
         var repo = new JsonSceneRepository(persistenceOptions, _options);
 
-        foreach (var scene in repo.LoadAll())
+        foreach (var document in repo.LoadAllDocuments())
+        {
+            var scene = document.Scene;
+            if (_scenes.ContainsKey(scene.Id.Value))
+            {
+                throw new StoryValidationException(
+                    $"Duplicate scene id '{scene.Id.Value}' found.",
+                    [
+                        StoryValidationIssue.Error(
+                            StoryValidationCodes.DuplicateSceneId,
+                            $"Duplicate scene id '{scene.Id.Value}' found while loading the editor.",
+                            document.FilePath,
+                            scene.Id.Value)
+                    ]);
+            }
+
             _scenes[scene.Id.Value] = scene;
+        }
     }
 }

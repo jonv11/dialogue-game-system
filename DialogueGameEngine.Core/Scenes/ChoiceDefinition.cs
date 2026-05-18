@@ -7,8 +7,8 @@ namespace DialogueGameEngine.Core;
 /// <remarks>
 /// <para>
 /// Choices are the primary way the player shapes the story. When selected, their
-/// <see cref="Effects"/> are applied in order, then the engine moves to <see cref="NextScene"/>
-/// (if set).
+/// scene's exit effects run, then <see cref="Effects"/> are applied in order, then the engine
+/// moves to <see cref="NextScene"/> (if set) and runs the target scene's enter effects.
 /// </para>
 /// <para>
 /// A <see cref="Condition"/> of <see langword="null"/> means the choice is always available.

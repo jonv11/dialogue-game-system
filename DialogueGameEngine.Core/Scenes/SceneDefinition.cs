@@ -15,8 +15,8 @@ namespace DialogueGameEngine.Core;
 /// <para>
 /// <b>Lifecycle:</b>
 /// When the engine moves to a scene, it executes <see cref="OnEnterEffects"/>.
-/// When it leaves, it executes <see cref="OnExitEffects"/> (you are responsible for calling these
-/// via your runner — <see cref="DialogueEngine"/> provides the building blocks).
+/// When it leaves, it executes <see cref="OnExitEffects"/>.
+/// <see cref="DialogueEngine"/> owns this lifecycle execution so runners do not need to simulate it.
 /// </para>
 /// </remarks>
 /// <example>

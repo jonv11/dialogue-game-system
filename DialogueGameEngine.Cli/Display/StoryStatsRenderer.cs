@@ -45,7 +45,7 @@ internal static class StoryStatsRenderer
             AnsiConsole.WriteLine();
             AnsiConsole.MarkupLine("[red bold]Broken scene references:[/]");
             foreach (var broken in stats.BrokenNextSceneRefs)
-                AnsiConsole.MarkupLine($"  [red]nextScene[/] [dim]→[/] [yellow]{Markup.Escape(broken)}[/] [dim](no scene with this id)[/]");
+                AnsiConsole.MarkupLine($"  [red]scene reference[/] [dim]→[/] [yellow]{Markup.Escape(broken)}[/] [dim](no scene with this id)[/]");
         }
 
         AnsiConsole.WriteLine();

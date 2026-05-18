@@ -15,14 +15,30 @@ public sealed class JsonGameStateRepository : IGameStateRepository
         _options = serializerOptions;
     }
 
-    public GameState? Load()
+    public GameState? Load() => Load(hasStartedDefault: true);
+
+    public GameState? Load(bool hasStartedDefault)
     {
         if (!File.Exists(_savePath))
             return null;
 
-        var json = File.ReadAllText(_savePath);
-        var snapshot = JsonSerializer.Deserialize<GameStateSnapshot>(json, _options);
-        return snapshot?.ToGameState();
+        try
+        {
+            var json = File.ReadAllText(_savePath);
+            var snapshot = JsonSerializer.Deserialize<GameStateSnapshot>(json, _options);
+            return snapshot?.ToGameState(hasStartedDefault);
+        }
+        catch (Exception ex)
+        {
+            throw new StoryValidationException(
+                $"Failed to load game state '{_savePath}'.",
+                [
+                    StoryValidationIssue.Error(
+                        StoryValidationCodes.InvalidJson,
+                        $"Failed to load '{_savePath}': {ex.Message}",
+                        _savePath)
+                ]);
+        }
     }
 
     public void Save(GameState state)

@@ -31,12 +31,21 @@ public sealed class GameState
     public SceneId CurrentScene { get; private set; }
 
     /// <summary>
+    /// Returns <see langword="true"/> after the initial scene's enter lifecycle has run.
+    /// </summary>
+    public bool HasStarted { get; private set; }
+
+    /// <summary>
     /// Creates a new game state, positioned at <paramref name="initialScene"/> with no attributes or flags set.
     /// </summary>
     /// <param name="initialScene">The scene where the story begins.</param>
-    public GameState(SceneId initialScene)
+    /// <param name="hasStarted">
+    /// Whether the session has already run its initial enter lifecycle. Saved games should restore this as true.
+    /// </param>
+    public GameState(SceneId initialScene, bool hasStarted = false)
     {
         CurrentScene = initialScene;
+        HasStarted = hasStarted;
     }
 
     /// <summary>
@@ -76,6 +85,9 @@ public sealed class GameState
 
     /// <summary>Moves the current scene pointer to <paramref name="scene"/>.</summary>
     public void MoveTo(SceneId scene) => CurrentScene = scene;
+
+    /// <summary>Marks the session as having run its initial enter lifecycle.</summary>
+    public void MarkStarted() => HasStarted = true;
 
     /// <summary>
     /// Exposes all stored attribute values for serialization.

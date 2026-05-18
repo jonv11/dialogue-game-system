@@ -5,6 +5,7 @@ using DialogueGameEngine.Core;
 public sealed record GameStateSnapshot
 {
     public required string CurrentScene { get; init; }
+    public bool? HasStarted { get; init; }
     public IReadOnlyList<AttributeSnapshot> Attributes { get; init; } = [];
     public IReadOnlyList<string> Flags { get; init; } = [];
 
@@ -14,6 +15,7 @@ public sealed record GameStateSnapshot
         return new GameStateSnapshot
         {
             CurrentScene = state.CurrentScene.Value,
+            HasStarted = state.HasStarted,
             Attributes = state.GetAllAttributes()
                 .Select(kv => new AttributeSnapshot { Address = kv.Key, Value = kv.Value.Value })
                 .ToList(),
@@ -22,9 +24,9 @@ public sealed record GameStateSnapshot
     }
 
     // Reconstructs a GameState from this snapshot
-    public GameState ToGameState()
+    public GameState ToGameState(bool hasStartedDefault = true)
     {
-        var state = new GameState(new SceneId(CurrentScene));
+        var state = new GameState(new SceneId(CurrentScene), HasStarted ?? hasStartedDefault);
         foreach (var attr in Attributes)
             state.SetAttribute(attr.Address, attr.Value);
         foreach (var flag in Flags)

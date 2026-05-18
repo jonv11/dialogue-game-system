@@ -30,11 +30,42 @@ public sealed class DialogueEngine
     /// </summary>
     /// <param name="scenes">
     /// All scene definitions that make up the story. Each scene's <see cref="SceneDefinition.Id"/>
-    /// must be unique — duplicates will cause one to overwrite the other silently.
+    /// must be unique.
     /// </param>
     public DialogueEngine(IEnumerable<SceneDefinition> scenes)
+        : this(scenes.Select(scene => new SceneDocument { Scene = scene }))
     {
-        _scenes = scenes.ToDictionary(s => s.Id);
+    }
+
+    /// <summary>
+    /// Creates a new engine loaded with scene definitions and optional file metadata.
+    /// </summary>
+    public DialogueEngine(IEnumerable<SceneDocument> scenes)
+    {
+        var documents = scenes.ToList();
+        var duplicateIssues = CreateDuplicateSceneIssues(documents);
+        if (duplicateIssues.Count > 0)
+            throw new StoryValidationException("Duplicate scene IDs were found.", duplicateIssues);
+
+        _scenes = documents.ToDictionary(d => d.Scene.Id, d => d.Scene);
+    }
+
+    /// <summary>
+    /// Starts a new session by running the current scene's enter lifecycle once.
+    /// Calling this again on the same started state is a no-op.
+    /// </summary>
+    public void Start(GameState state)
+    {
+        if (state.HasStarted)
+            return;
+
+        var scene = GetCurrentScene(state);
+        var context = CreateContext(state, scene);
+
+        foreach (var effect in scene.OnEnterEffects)
+            effect.Apply(state, context);
+
+        state.MarkStarted();
     }
 
     /// <summary>
@@ -89,7 +120,7 @@ public sealed class DialogueEngine
     }
 
     /// <summary>
-    /// Applies the effects of the chosen option and moves to the next scene.
+    /// Applies lifecycle effects, the effects of the chosen option, and moves to the next scene.
     /// </summary>
     /// <param name="state">The game state to mutate.</param>
     /// <param name="choiceId">The ID of the choice the player selected.</param>
@@ -108,11 +139,45 @@ public sealed class DialogueEngine
         if (!choice.IsAvailable(context))
             throw new InvalidOperationException($"Choice is not available: {choiceId.Value}");
 
+        foreach (var effect in scene.OnExitEffects)
+            effect.Apply(state, context);
+
         foreach (var effect in choice.Effects)
             effect.Apply(state, context);
 
         if (choice.NextScene is not null)
             state.MoveTo(choice.NextScene.Value);
+
+        var targetScene = GetCurrentScene(state);
+        var targetContext = CreateContext(state, targetScene);
+        foreach (var effect in targetScene.OnEnterEffects)
+            effect.Apply(state, targetContext);
+    }
+
+    private static IReadOnlyList<StoryValidationIssue> CreateDuplicateSceneIssues(
+        IReadOnlyList<SceneDocument> documents)
+    {
+        return documents
+            .GroupBy(d => d.Scene.Id.Value, StringComparer.Ordinal)
+            .Where(g => g.Count() > 1)
+            .Select(g =>
+            {
+                var paths = g.Select(d => d.FilePath)
+                    .Where(p => !string.IsNullOrWhiteSpace(p))
+                    .Distinct(StringComparer.OrdinalIgnoreCase)
+                    .ToList();
+
+                var pathText = paths.Count == 0
+                    ? string.Empty
+                    : $"{Environment.NewLine}- {string.Join($"{Environment.NewLine}- ", paths)}";
+
+                return StoryValidationIssue.Error(
+                    StoryValidationCodes.DuplicateSceneId,
+                    $"Duplicate scene id '{g.Key}' found.{pathText}",
+                    paths.FirstOrDefault(),
+                    g.Key);
+            })
+            .ToList();
     }
 
     private static EvaluationContext CreateContext(GameState state, SceneDefinition scene)

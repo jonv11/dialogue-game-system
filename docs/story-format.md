@@ -2,6 +2,8 @@
 
 Stories are directories of JSON files — one file per scene. The engine reads every `.json` file in the story directory and its subdirectories whose **filename** does not start with `_`, plus an optional `_initial-state.json` for seeding starting values.
 
+Loading is strict by default. Invalid JSON, unknown condition/effect `$type` values, missing required fields, and duplicate scene IDs fail validation and normal CLI commands instead of being skipped.
+
 ---
 
 ## File Naming and Organisation
@@ -62,6 +64,21 @@ Each scene file describes one unit of narrative. The file name is arbitrary; the
 | `onEnterEffects` | no | Effect[] | Applied when the player enters this scene |
 | `onExitEffects` | no | Effect[] | Applied when the player leaves this scene |
 
+Missing list fields are treated as empty lists. Required string fields must be present and non-empty for validation to pass.
+
+### Scene lifecycle
+
+Lifecycle effects are executed by the Core engine:
+
+1. When a new game state starts, `DialogueEngine.Start(state)` applies the initial scene's `onEnterEffects` once and marks the state started.
+2. Reading, inspecting, or displaying the current scene does not replay `onEnterEffects`.
+3. When the player selects an available choice, the current scene's `onExitEffects` run first.
+4. The selected choice's `effects` run next.
+5. If the choice has `nextScene`, the engine moves there after choice effects. This makes `nextScene` the final static transition when both choice effects and `nextScene` move scenes.
+6. The final current scene's `onEnterEffects` run.
+
+Returning to a scene later runs that scene's `onEnterEffects` again.
+
 ---
 
 ## Choice
@@ -83,6 +100,8 @@ Each scene file describes one unit of narrative. The file name is arbitrary; the
 | `condition` | no | Condition | If absent, the choice is always available |
 | `effects` | no | Effect[] | Applied in order when the choice is selected |
 | `nextScene` | no | string | Scene ID to move to after effects; omit to stay in the current scene |
+
+Duplicate choice IDs within the same scene are validation errors. `nextScene` must reference an existing scene when present.
 
 ---
 
@@ -122,6 +141,17 @@ A global value shared across all scenes.
 { "scope": "World", "attribute": "DaysPassed" }
 ```
 
+Required fields by scope:
+
+| Scope | Required fields |
+|-------|-----------------|
+| `Character` | `scope`, `character`, `attribute` |
+| `Relation` | `scope`, `from`, `to`, `attribute` |
+| `Scene` | `scope`, `scene`, `attribute` |
+| `World` | `scope`, `attribute` |
+
+All required identifier fields must be non-empty strings. Unknown scope values fail validation.
+
 ---
 
 ## Conditions
@@ -147,6 +177,8 @@ Compares an attribute value to a threshold.
 | `operator` | yes | `LessThan` / `LessThanOrEqual` / `Equal` / `GreaterThanOrEqual` / `GreaterThan` |
 | `value` | yes | Integer threshold |
 | `useEffectiveValue` | no | `true` (default) — includes modifier deltas; `false` — raw base value only |
+
+Thresholds outside `-100..100` are allowed but produce validation warnings because runtime attribute values are clamped to that range.
 
 ### FlagCondition
 
@@ -252,11 +284,13 @@ Removes a flag.
 
 ### MoveToSceneEffect
 
-Transitions to a scene. Prefer `"nextScene"` on the choice for normal flow; use this inside a `ConditionalEffect` when the target must be decided at runtime.
+Transitions to a scene by mutating the current game state. Prefer `"nextScene"` on the choice for normal flow; use this inside a `ConditionalEffect` when the target must be decided at runtime.
 
 ```json
 { "$type": "MoveToSceneEffect", "scene": "epilogue" }
 ```
+
+Static `MoveToSceneEffect` targets are included in validation and graph analysis, including effects nested in `ConditionalEffect`, `onEnterEffects`, and `onExitEffects`. If a choice also has `nextScene`, the engine applies choice effects first and then applies `nextScene` as the final static transition.
 
 ### ConditionalEffect
 
@@ -284,6 +318,8 @@ Branches between two effect lists at runtime based on a condition.
 ```
 
 The `"else"` list defaults to empty (no-op) if omitted.
+
+Both `then` and `else` effect lists are validated recursively. The `condition` field is required.
 
 ---
 
@@ -327,7 +363,7 @@ Modifiers temporarily adjust the *effective* value of an attribute without chang
 
 **`CurrentScene`** — active for as long as the player is in this scene. This is the most common use: a tense room that reduces everyone's self-control, a drunk NPC whose Perception is lowered.
 
-**`Instant`** — applied once at scene entry and does not persist. In most cases `onEnterEffects` is a clearer choice.
+**`Instant`** — reserved for future one-shot modifier behavior. The current engine does not apply `Instant` modifiers; use `onEnterEffects` for one-time scene-entry changes.
 
 ---
 
@@ -352,7 +388,32 @@ Seeds attribute values and the starting scene before the first play begins. The 
 }
 ```
 
-All attributes default to `0` if not listed. Flags default to empty.
+All attributes default to `0` if not listed. Flags default to empty. Attribute values outside `-100..100` are accepted by the runtime but clamped; validation reports these as warnings so authors can fix the data deliberately.
+
+When this file is used to create a new session, the state is considered not started yet. The CLI creates the state, calls `DialogueEngine.Start`, and then the initial scene's `onEnterEffects` run once.
+
+---
+
+## Validation
+
+Run validation before playing or shipping a story:
+
+```sh
+dotnet run --project DialogueGameEngine.Cli -- validate --story <dir>
+dotnet run --project DialogueGameEngine.Cli -- validate --story <dir> --warnings-as-errors
+dotnet run --project DialogueGameEngine.Cli -- validate --story <dir> --format json
+```
+
+Validation errors fail with a non-zero exit code. Warnings do not fail unless `--warnings-as-errors` is set.
+
+Validation checks:
+
+- JSON loading and deserialization with file paths in errors
+- Required scene, choice, condition, effect, attribute address, and initial-state fields
+- Duplicate scene IDs and duplicate choice IDs
+- Unknown `nextScene` and static `MoveToSceneEffect` references
+- Missing start scenes, unreachable scenes, orphan scenes, endings, and no-playable-path stories
+- Lifecycle effect lists using the same effect rules as choice effects
 
 ---
 

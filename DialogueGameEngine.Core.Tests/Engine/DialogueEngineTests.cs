@@ -209,4 +209,24 @@ public class DialogueEngineTests
 
         available.Should().HaveCount(1);
     }
+
+    [Fact]
+    public void Constructor_DuplicateSceneIds_ThrowsStructuredException()
+    {
+        var first = TestFixture.NewScene(TestFixture.SceneA);
+        var second = TestFixture.NewScene(TestFixture.SceneA);
+
+        var act = () => new DialogueEngine(
+        [
+            new SceneDocument { Scene = first, FilePath = "first.json" },
+            new SceneDocument { Scene = second, FilePath = "second.json" }
+        ]);
+
+        act.Should().Throw<StoryValidationException>()
+            .Which.Issues.Should().Contain(i =>
+                i.Code == StoryValidationCodes.DuplicateSceneId &&
+                i.Message.Contains("scene_a") &&
+                i.Message.Contains("first.json") &&
+                i.Message.Contains("second.json"));
+    }
 }
