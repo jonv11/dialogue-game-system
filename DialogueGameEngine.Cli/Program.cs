@@ -8,11 +8,13 @@ using Spectre.Console;
 // ──────────────────────────────────────────────────────────────────────────────
 // Usage:
 //   dialogue-engine --story <dir> [--save <file>] [--start <scene-id>]
-//   dialogue-engine edit --story <dir>
+//   dialogue-engine edit  --story <dir>
+//   dialogue-engine reset --story <dir> [--save <file>]
 //
 // Subcommands
 //   (default)  Play a story
 //   edit       Open the interactive story editor
+//   reset      Delete the save file for a story
 //
 // --story   Directory containing one .json file per scene (required)
 // --save    Path to the save file (default: save.json next to --story)
@@ -32,8 +34,9 @@ if (args.Contains("--version") || args.Contains("-v"))
     return 0;
 }
 
-var isEdit = args.Length > 0 && args[0] == "edit";
-var argSpan = isEdit ? args[1..] : args;
+var isEdit  = args.Length > 0 && args[0] == "edit";
+var isReset = args.Length > 0 && args[0] == "reset";
+var argSpan = (isEdit || isReset) ? args[1..] : args;
 
 string? storyDir   = null;
 string? saveFile   = null;
@@ -59,6 +62,8 @@ if (storyDir is null)
 {
     if (isEdit)
         AnsiConsole.MarkupLine("[red]Usage:[/] dialogue-engine edit [bold]--story <dir>[/]");
+    else if (isReset)
+        AnsiConsole.MarkupLine("[red]Usage:[/] dialogue-engine reset [bold]--story <dir>[/] [[--save <file>]]");
     else
         AnsiConsole.MarkupLine("[red]Usage:[/] dialogue-engine [bold]--story <dir>[/] [--save <file>] [--start <scene-id>]");
     return 1;
@@ -73,6 +78,21 @@ if (isEdit)
 {
     var editor = new StoryEditor(storyDir, serializerOptions);
     editor.Run();
+    return 0;
+}
+
+// ── Reset mode ───────────────────────────────────────────────────────────────
+if (isReset)
+{
+    saveFile ??= Path.Combine(Path.GetDirectoryName(storyDir) ?? ".", "save.json");
+    var resetOptions  = new PersistenceOptions { StoryDirectory = storyDir, SaveFilePath = saveFile };
+    var resetSaveRepo = new JsonGameStateRepository(resetOptions, serializerOptions);
+
+    if (resetSaveRepo.Delete())
+        AnsiConsole.MarkupLine($"[green]Save deleted:[/] [yellow]{Markup.Escape(saveFile)}[/]");
+    else
+        AnsiConsole.MarkupLine($"[dim]No save file found at:[/] [yellow]{Markup.Escape(saveFile)}[/]");
+
     return 0;
 }
 
@@ -138,7 +158,8 @@ static void PrintHelp()
     AnsiConsole.WriteLine();
     AnsiConsole.MarkupLine("[bold]USAGE[/]");
     AnsiConsole.MarkupLine("  dialogue-engine [bold]--story[/] [italic]<dir>[/] [[OPTIONS]]");
-    AnsiConsole.MarkupLine("  dialogue-engine edit [bold]--story[/] [italic]<dir>[/]");
+    AnsiConsole.MarkupLine("  dialogue-engine edit  [bold]--story[/] [italic]<dir>[/]");
+    AnsiConsole.MarkupLine("  dialogue-engine reset [bold]--story[/] [italic]<dir>[/] [[[bold]--save[/] [italic]<file>[/]]]");
     AnsiConsole.MarkupLine("  dialogue-engine ([bold]--help[/] | [bold]-h[/])");
     AnsiConsole.MarkupLine("  dialogue-engine ([bold]--version[/] | [bold]-v[/])");
     AnsiConsole.WriteLine();
@@ -150,6 +171,11 @@ static void PrintHelp()
     AnsiConsole.MarkupLine("[bold]EDIT MODE[/]");
     AnsiConsole.MarkupLine("  Opens the interactive story editor for the given story directory.");
     AnsiConsole.MarkupLine("  [bold]--story[/] [italic]<dir>[/]       Story directory to open (created if absent)");
+    AnsiConsole.WriteLine();
+    AnsiConsole.MarkupLine("[bold]RESET MODE[/]");
+    AnsiConsole.MarkupLine("  Deletes the save file so the story can be played from the beginning.");
+    AnsiConsole.MarkupLine("  [bold]--story[/] [italic]<dir>[/]       Story directory [dim][[required]][/]");
+    AnsiConsole.MarkupLine("  [bold]--save[/]  [italic]<file>[/]      Save file to delete [dim][[default: save.json next to --story]][/]");
     AnsiConsole.WriteLine();
     AnsiConsole.MarkupLine("[bold]PLAYER CONTROLS[/]");
     AnsiConsole.MarkupLine("  [bold]1[/]–[bold]9[/]   Select a choice");

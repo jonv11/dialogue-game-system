@@ -31,4 +31,13 @@ public sealed class JsonGameStateRepository : IGameStateRepository
         var json = JsonSerializer.Serialize(snapshot, _options);
         File.WriteAllText(_savePath, json);
     }
+
+    public bool Delete()
+    {
+        if (!File.Exists(_savePath))
+            return false;
+
+        File.Delete(_savePath);
+        return true;
+    }
 }

@@ -10,4 +10,7 @@ public interface IGameStateRepository
 
     /// <summary>Saves the current game state to disk.</summary>
     void Save(GameState state);
+
+    /// <summary>Deletes the save file. Returns true if a file was deleted, false if none existed.</summary>
+    bool Delete();
 }
