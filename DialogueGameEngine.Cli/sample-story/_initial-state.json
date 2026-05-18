@@ -1,0 +1,14 @@
+{
+  "currentScene": "broken_vase_confrontation",
+  "attributes": [
+    {
+      "address": { "scope": "Character", "character": "Player", "attribute": "Openness" },
+      "value": 20
+    },
+    {
+      "address": { "scope": "Relation", "from": "Mira", "to": "Player", "attribute": "Trust" },
+      "value": 25
+    }
+  ],
+  "flags": []
+}

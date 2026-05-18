@@ -1,0 +1,21 @@
+{
+  "id": "the_farewell",
+  "title": "Parting Ways",
+  "description": "The fire has burned low. Stars have appeared overhead. The stranger thanks you for the company, however brief, and rises to continue their journey. You sense you have both changed, a little.",
+  "participants": ["Traveller", "Stranger"],
+  "onEnterEffects": [
+    {
+      "$type": "ConditionalEffect",
+      "condition": { "$type": "FlagCondition", "flag": "GaveAdvice", "expected": true },
+      "then": [
+        {
+          "$type": "ChangeAttributeEffect",
+          "target": { "scope": "Relation", "from": "Traveller", "to": "Stranger", "attribute": "Trust" },
+          "delta": 5
+        }
+      ],
+      "else": []
+    }
+  ],
+  "choices": []
+}

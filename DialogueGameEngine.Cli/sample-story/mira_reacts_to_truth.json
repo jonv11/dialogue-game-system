@@ -1,0 +1,32 @@
+{
+  "id": "mira_reacts_to_truth",
+  "title": "Mira Hears the Truth",
+  "description": "Mira closes her eyes for a moment. When she opens them, some of the hardness has left her face. \"Thank you for telling me,\" she says quietly. \"That vase meant a lot. But so does honesty.\"",
+  "participants": ["Player", "Mira"],
+  "choices": [
+    {
+      "id": "apologize",
+      "text": "\"I'll replace it. I promise.\"",
+      "effects": [
+        {
+          "$type": "ChangeAttributeEffect",
+          "target": { "scope": "Relation", "from": "Mira", "to": "Player", "attribute": "Trust" },
+          "delta": 5
+        }
+      ],
+      "nextScene": "mira_forgives"
+    },
+    {
+      "id": "just_nod",
+      "text": "Nod. Don't make promises you might not keep.",
+      "effects": [
+        {
+          "$type": "ChangeAttributeEffect",
+          "target": { "scope": "Character", "character": "Player", "attribute": "Openness" },
+          "delta": 1
+        }
+      ],
+      "nextScene": "mira_forgives"
+    }
+  ]
+}

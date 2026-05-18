@@ -1,0 +1,14 @@
+{
+  "currentScene": "forest_path",
+  "attributes": [
+    {
+      "address": { "scope": "Character", "character": "Traveller", "attribute": "Kindness" },
+      "value": 0
+    },
+    {
+      "address": { "scope": "Relation", "from": "Traveller", "to": "Stranger", "attribute": "Trust" },
+      "value": 0
+    }
+  ],
+  "flags": []
+}

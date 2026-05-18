@@ -1,0 +1,49 @@
+{
+  "id": "forest_path",
+  "title": "A Forest Path",
+  "description": "Dusk settles over the pine trees. A hooded stranger sits on a fallen log beside the trail, shoulders hunched against the cold. They look up as you approach.",
+  "participants": ["Traveller", "Stranger"],
+  "choices": [
+    {
+      "id": "offer_food",
+      "text": "Share some of your trail food with them.",
+      "effects": [
+        {
+          "$type": "ChangeAttributeEffect",
+          "target": { "scope": "Character", "character": "Traveller", "attribute": "Kindness" },
+          "delta": 10
+        },
+        {
+          "$type": "ChangeAttributeEffect",
+          "target": { "scope": "Relation", "from": "Traveller", "to": "Stranger", "attribute": "Trust" },
+          "delta": 8
+        },
+        { "$type": "SetFlagEffect", "flag": "SharedFood" }
+      ],
+      "nextScene": "by_the_fire"
+    },
+    {
+      "id": "offer_directions",
+      "text": "Ask if they need help finding their way.",
+      "effects": [
+        {
+          "$type": "ChangeAttributeEffect",
+          "target": { "scope": "Character", "character": "Traveller", "attribute": "Kindness" },
+          "delta": 5
+        },
+        {
+          "$type": "ChangeAttributeEffect",
+          "target": { "scope": "Relation", "from": "Traveller", "to": "Stranger", "attribute": "Trust" },
+          "delta": 3
+        }
+      ],
+      "nextScene": "by_the_fire"
+    },
+    {
+      "id": "keep_walking",
+      "text": "Nod politely and keep moving.",
+      "effects": [],
+      "nextScene": "by_the_fire"
+    }
+  ]
+}

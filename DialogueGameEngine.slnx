@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="DialogueGameEngine.Cli/DialogueGameEngine.Cli.csproj" />
+  <Project Path="DialogueGameEngine.Core.Tests/DialogueGameEngine.Core.Tests.csproj" />
+  <Project Path="DialogueGameEngine.Core/DialogueGameEngine.Core.csproj" />
+  <Project Path="DialogueGameEngine.Persistence/DialogueGameEngine.Persistence.csproj" />
+</Solution>

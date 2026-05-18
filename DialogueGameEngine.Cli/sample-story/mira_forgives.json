@@ -1,0 +1,53 @@
+{
+  "id": "mira_forgives",
+  "title": "Mira Forgives",
+  "description": "Mira sits down at the kitchen table and exhales slowly. \"Come sit,\" she says. \"Tell me how it happened.\" The tension in the room begins to dissolve.",
+  "participants": ["Player", "Mira"],
+  "choices": [
+    {
+      "id": "tell_the_story",
+      "text": "Sit down and explain exactly what happened.",
+      "condition": {
+        "$type": "FlagCondition",
+        "flag": "BrokenVaseConfessed",
+        "expected": true
+      },
+      "effects": [
+        {
+          "$type": "ChangeAttributeEffect",
+          "target": { "scope": "Relation", "from": "Mira", "to": "Player", "attribute": "Trust" },
+          "delta": 5
+        },
+        {
+          "$type": "ConditionalEffect",
+          "condition": {
+            "$type": "AttributeCondition",
+            "target": { "scope": "Relation", "from": "Mira", "to": "Player", "attribute": "Trust" },
+            "operator": "GreaterThanOrEqual",
+            "value": 30
+          },
+          "then": [
+            {
+              "$type": "SetFlagEffect",
+              "flag": "TrustRestored"
+            }
+          ],
+          "else": []
+        }
+      ],
+      "nextScene": "epilogue"
+    },
+    {
+      "id": "change_subject",
+      "text": "\"I'd rather not talk about it anymore.\"",
+      "effects": [
+        {
+          "$type": "ChangeAttributeEffect",
+          "target": { "scope": "Relation", "from": "Mira", "to": "Player", "attribute": "Trust" },
+          "delta": -3
+        }
+      ],
+      "nextScene": "epilogue"
+    }
+  ]
+}

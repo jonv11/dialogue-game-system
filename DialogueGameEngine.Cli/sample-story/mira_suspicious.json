@@ -1,0 +1,50 @@
+{
+  "id": "mira_suspicious",
+  "title": "Mira Grows Suspicious",
+  "description": "Mira stares at you for a long moment. Her jaw tightens. \"Fine,\" she says, the word landing like a door closing. She doesn't believe you, and you both know it.",
+  "participants": ["Player", "Mira"],
+  "choices": [
+    {
+      "id": "reconsider_confess",
+      "text": "\"Wait. I lied. I did break it.\"",
+      "condition": {
+        "$type": "FlagCondition",
+        "flag": "LiedAboutBrokenVase",
+        "expected": true
+      },
+      "effects": [
+        {
+          "$type": "SetFlagEffect",
+          "flag": "BrokenVaseConfessed"
+        },
+        {
+          "$type": "ClearFlagEffect",
+          "flag": "LiedAboutBrokenVase"
+        },
+        {
+          "$type": "ChangeAttributeEffect",
+          "target": { "scope": "Relation", "from": "Mira", "to": "Player", "attribute": "Trust" },
+          "delta": 3
+        },
+        {
+          "$type": "ChangeAttributeEffect",
+          "target": { "scope": "Character", "character": "Player", "attribute": "Openness" },
+          "delta": 3
+        }
+      ],
+      "nextScene": "mira_reacts_to_truth"
+    },
+    {
+      "id": "double_down",
+      "text": "\"I have no idea what you're talking about.\"",
+      "effects": [
+        {
+          "$type": "ChangeAttributeEffect",
+          "target": { "scope": "Relation", "from": "Mira", "to": "Player", "attribute": "Trust" },
+          "delta": -10
+        }
+      ],
+      "nextScene": "mira_walks_away"
+    }
+  ]
+}

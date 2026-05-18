@@ -1,0 +1,59 @@
+{
+  "id": "by_the_fire",
+  "title": "By the Fire",
+  "description": "The stranger has lit a small fire. They gesture for you to sit. Warmth and the smell of pine sap fill the air as they begin talking about their long, difficult journey.",
+  "participants": ["Traveller", "Stranger"],
+  "modifiers": [
+    {
+      "id": "firelight_warmth",
+      "target": { "scope": "Character", "character": "Traveller", "attribute": "Kindness" },
+      "delta": 5,
+      "duration": "CurrentScene"
+    }
+  ],
+  "choices": [
+    {
+      "id": "listen_and_advise",
+      "text": "\"I know that road. Here is what helped me.\"",
+      "condition": {
+        "$type": "AttributeCondition",
+        "target": { "scope": "Character", "character": "Traveller", "attribute": "Kindness" },
+        "operator": "GreaterThan",
+        "value": 8
+      },
+      "effects": [
+        {
+          "$type": "ChangeAttributeEffect",
+          "target": { "scope": "Relation", "from": "Traveller", "to": "Stranger", "attribute": "Trust" },
+          "delta": 10
+        },
+        { "$type": "SetFlagEffect", "flag": "GaveAdvice" }
+      ],
+      "nextScene": "the_farewell"
+    },
+    {
+      "id": "share_stories",
+      "text": "Trade stories of the road — yours and theirs.",
+      "effects": [
+        {
+          "$type": "ChangeAttributeEffect",
+          "target": { "scope": "Relation", "from": "Traveller", "to": "Stranger", "attribute": "Trust" },
+          "delta": 5
+        }
+      ],
+      "nextScene": "the_farewell"
+    },
+    {
+      "id": "polite_excuse",
+      "text": "\"I should get moving — it will be dark soon.\"",
+      "effects": [
+        {
+          "$type": "ChangeAttributeEffect",
+          "target": { "scope": "Relation", "from": "Traveller", "to": "Stranger", "attribute": "Trust" },
+          "delta": -3
+        }
+      ],
+      "nextScene": "the_farewell"
+    }
+  ]
+}

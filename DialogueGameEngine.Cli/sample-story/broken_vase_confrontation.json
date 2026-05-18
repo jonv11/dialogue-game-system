@@ -1,0 +1,77 @@
+{
+  "id": "broken_vase_confrontation",
+  "title": "Broken Vase Confrontation",
+  "description": "You're in the kitchen. Mira is standing by the window, arms crossed. Shards of the blue ceramic vase your mother gave her lie scattered across the floor. She knows. She's waiting for you to say something.",
+  "participants": ["Player", "Mira"],
+  "ambiance": [
+    {
+      "target": { "scope": "Scene", "scene": "broken_vase_confrontation", "attribute": "Tension" },
+      "value": 50
+    }
+  ],
+  "modifiers": [
+    {
+      "id": "tension_reduces_control",
+      "target": { "scope": "Character", "character": "Player", "attribute": "Control" },
+      "delta": -10,
+      "duration": "CurrentScene"
+    }
+  ],
+  "choices": [
+    {
+      "id": "confess",
+      "text": "\"Yes. I broke it. I'm sorry.\"",
+      "condition": {
+        "$type": "AttributeCondition",
+        "target": { "scope": "Character", "character": "Player", "attribute": "Openness" },
+        "operator": "GreaterThan",
+        "value": 5
+      },
+      "effects": [
+        {
+          "$type": "ChangeAttributeEffect",
+          "target": { "scope": "Character", "character": "Player", "attribute": "Openness" },
+          "delta": 2
+        },
+        {
+          "$type": "ChangeAttributeEffect",
+          "target": { "scope": "Relation", "from": "Mira", "to": "Player", "attribute": "Trust" },
+          "delta": 5
+        },
+        {
+          "$type": "SetFlagEffect",
+          "flag": "BrokenVaseConfessed"
+        }
+      ],
+      "nextScene": "mira_reacts_to_truth"
+    },
+    {
+      "id": "lie",
+      "text": "\"No. It was already like that when I came in.\"",
+      "effects": [
+        {
+          "$type": "ChangeAttributeEffect",
+          "target": { "scope": "Relation", "from": "Mira", "to": "Player", "attribute": "Trust" },
+          "delta": -5
+        },
+        {
+          "$type": "SetFlagEffect",
+          "flag": "LiedAboutBrokenVase"
+        }
+      ],
+      "nextScene": "mira_suspicious"
+    },
+    {
+      "id": "stay_silent",
+      "text": "Say nothing. Look away.",
+      "effects": [
+        {
+          "$type": "ChangeAttributeEffect",
+          "target": { "scope": "Relation", "from": "Mira", "to": "Player", "attribute": "Trust" },
+          "delta": -2
+        }
+      ],
+      "nextScene": "mira_suspicious"
+    }
+  ]
+}
