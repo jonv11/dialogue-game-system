@@ -20,7 +20,9 @@ public sealed class JsonSceneRepository : ISceneRepository
             throw new DirectoryNotFoundException($"Story directory not found: '{_directory}'");
 
         // Files starting with '_' are metadata (initial-state, config) — not scene definitions.
-        foreach (var file in Directory.EnumerateFiles(_directory, "*.json")
+        // Scans recursively so scenes can be grouped into subdirectories (e.g. act1/, act2/).
+        // The '_' exclusion applies to the filename only, not to directory names.
+        foreach (var file in Directory.EnumerateFiles(_directory, "*.json", SearchOption.AllDirectories)
             .Where(f => !Path.GetFileName(f).StartsWith('_')))
         {
             SceneDefinition? scene = null;

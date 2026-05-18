@@ -25,7 +25,7 @@ dotnet run --project DialogueGameEngine.Cli -- --story <dir> [--save <file>] [--
 
 | Argument | Default | Description |
 |----------|---------|-------------|
-| `--story` | *(required)* | Directory containing one `.json` file per scene |
+| `--story` | *(required)* | Directory containing `.json` scene files (scanned recursively) |
 | `--save` | `save.json` next to `--story` | Path to the save file |
 | `--start` | first scene alphabetically | Scene ID to begin from when no save file exists |
 
@@ -59,17 +59,42 @@ If the directory does not exist it will be created. The editor lets you:
 
 ### Story Directory Structure
 
+Scenes are scanned recursively, so you can organise them however suits your story:
+
 ```
 my-story/
-├── scene_one.json          # one file per scene
-├── scene_two.json
-├── final_scene.json
-└── _initial-state.json     # optional: seed starting attribute values
+├── 0001-opening.json       # 4-digit prefix keeps files in play order in your editor
+├── 0002-confrontation.json
+├── 0003-resolution.json
+└── _initial-state.json     # optional: seed starting attribute values and opening scene
 ```
 
-- Each `.json` file **not starting with `_`** is one scene definition.
-- File names have no semantic meaning — the scene's `"id"` field is its identity.
+Or group scenes into subdirectories by act, chapter, or area:
+
+```
+my-story/
+├── act1/
+│   ├── 0001-opening.json
+│   └── 0002-confrontation.json
+├── act2/
+│   ├── 0001-midpoint.json
+│   └── 0002-resolution.json
+└── _initial-state.json
+```
+
+- Each `.json` file whose **filename does not start with `_`** is one scene definition. The engine scans subdirectories recursively; directory names are not restricted.
+- The **4-digit prefix** (`0001-`, `0002-`, …) is a convention for human readability only — the scene's `"id"` field inside the JSON is its identity. Subdirectories and prefixes have no effect on the engine.
 - `_initial-state.json` sets starting attribute values and the opening scene. Without it, the engine starts at the first scene alphabetically with all attributes at zero.
+
+### Analysing a Story
+
+Print graph statistics — scene count, choice count, reachable endings, unique paths, orphan scenes, and broken references:
+
+```sh
+dotnet run --project DialogueGameEngine.Cli -- stats --story <dir> [--start <scene-id>]
+```
+
+The optional `--start` overrides which scene is used as the root for reachability and path analysis. If omitted, the starting scene is read from `_initial-state.json` (or the first scene alphabetically if that file is absent).
 
 ### Scene File at a Glance
 

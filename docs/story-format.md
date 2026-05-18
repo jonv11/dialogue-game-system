@@ -1,6 +1,34 @@
 # Story Format Reference
 
-Stories are directories of JSON files — one file per scene. The engine reads every `.json` file in the directory that does not start with `_`, plus an optional `_initial-state.json` for seeding starting values.
+Stories are directories of JSON files — one file per scene. The engine reads every `.json` file in the story directory and its subdirectories whose **filename** does not start with `_`, plus an optional `_initial-state.json` for seeding starting values.
+
+---
+
+## File Naming and Organisation
+
+Scene files can be named freely, but the following conventions make large stories easier to navigate:
+
+**4-digit ordering prefix** — prefix each filename with a zero-padded number so files appear in play order in your editor or file browser:
+
+```text
+0001-opening.json
+0002-confrontation.json
+0003-resolution.json
+```
+
+**Subdirectory grouping** — organise scenes into subdirectories by act, chapter, or location. The engine scans recursively:
+
+```text
+act1/
+  0001-opening.json
+  0002-confrontation.json
+act2/
+  0001-midpoint.json
+  0002-resolution.json
+_initial-state.json
+```
+
+The prefix and directory path are purely for human organisation. The scene's `"id"` field inside the JSON is the only identity the engine uses. The `_` exclusion applies to the **filename only** — a directory named `_archive/` does not cause scenes inside it to be skipped; only a file named `_something.json` is excluded.
 
 ---
 
